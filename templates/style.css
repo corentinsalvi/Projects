@@ -108,6 +108,24 @@ button:disabled {
     padding: 25px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+}
+.flight-card::before,
+.flight-card::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: #000000;
+    border-radius: 50%;
+    top: 60%;
+    transform: translateY(-50%);
+}
+.flight-card::before {
+    left: -15px;
+}
+.flight-card::after {
+    right: -15px;
 }
 
 
@@ -187,19 +205,32 @@ button:disabled {
 }
 
 .daterangepicker .drp-buttons .btn{
-    margin-left: 8px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    padding: 4px 8px;
-    width: 20%;
+    margin-left: 8px !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    padding: 8px 15px !important;
+    min-width: auto !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
 }
 
 .daterangepicker .drp-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
+            display: flex !important;
+            gap: 10px !important;
+            justify-content: flex-end !important;
+            flex-wrap: nowrap !important;
+            width: 100% !important;
+            align-items: center !important;
 }
+
+.daterangepicker .drp-buttons span {
+    flex: 1 !important;
+}
+
+.daterangepicker .drp-buttons .drp-selected {
+    display: none !important;
+}
+
 .daterangepicker .drp-buttons button {
     flex: 1;
 }
@@ -208,6 +239,8 @@ button:disabled {
     left: 50% !important;
     transform: translateX(-50%) !important;
     top: auto !important;
+    margin-top: -10% !important;
+    border-radius: 15px !important;
 }
 .flight-route-line {
     display: flex;
@@ -233,8 +266,25 @@ button:disabled {
 .flight-route-line .dotted-line {
     position: absolute;
     width: 100%;
-    border-top: 2px dotted #ccc;
+    border-top: 2px dotted #000000;
     top: 15px;
+}
+.flight-route-line .dotted-line::before,
+.flight-route-line .dotted-line::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: #000000;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.flight-route-line .dotted-line::before {
+    left: 0;
+}
+.flight-route-line .dotted-line::after {
+    right: 0;
 }
 .flight-route-line .plane-icon {
     font-size: 24px;
@@ -272,7 +322,7 @@ button:disabled {
 .spinner {
     border: 4px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
-    border-top: 4px solid #667eea;
+    border-top: 4px solid #ffffff;
     width: 50px;
     height: 50px;
     animation: spin 1s linear infinite;

@@ -38,7 +38,7 @@
         </div>
 
         <div id="error" class="error" style="display: none;"></div>
-        <div class="separator"> Most Popular Flights</div>
+        <div class="separator" style="margin-bottom: 20px; margin-left: 3%; font-size: 20px;"> <strong>Most Popular Flights</strong></div>
         <div id="results" class="results"></div>
     </div>
 
@@ -57,8 +57,8 @@
                 parentEl: '.container',
                 locale: {
                     format: 'YYYY-MM-DD',
-                    applyLabel: 'Appliquer',
-                    cancelLabel: 'Annuler',
+                    applyLabel: 'Confirm',
+                    cancelLabel: 'Cancel',
                     daysOfWeek: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
                     monthNames: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
                     firstDay: 1
@@ -91,7 +91,7 @@
             const returnDate = document.getElementById('return_date').value;
 
             if (!departure || !arrival || !departureDate || !returnDate) {
-                alert('Veuillez remplir tous les champs');
+                alert('Please complete all fields');
                 return;
             }
 
@@ -228,9 +228,48 @@
             }
         }
 
+        async function bookFlight(bookingToken) {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+
+            loading.style.display = 'block';
+            error.style.display = 'none';
+
+            try {
+                const response = await fetch('/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        booking_token: bookingToken
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Booking response:', data);
+                alert('Vol réservé avec succès!');
+            } catch (err) {
+                error.textContent = `Erreur de réservation: ${err.message}`;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Ouvrir la page Google Flights pour réservation
+        function openBooking(url) {
+            if (!url) {
+                alert('Lien de réservation indisponible.');
+                return;
+            }
+            window.open(url, '_blank');
+        }
+
         function displayReturnFlights(outboundFlight, data, departureAirport, arrivalAirport) {
             const results = document.getElementById('results');
             const returnFlights = data.best_flights || data.other_flights || [];
+            const bookingUrl = (data.search_metadata && data.search_metadata.google_flights_url) || '';
             
             if (returnFlights.length === 0) {
                 results.innerHTML = '<div class="no-results">Aucun vol retour trouvé</div>';
@@ -259,7 +298,7 @@
                 if (index < outboundSegments.length - 1 && outboundFlight.layovers && outboundFlight.layovers[index]) {
                     const layover = outboundFlight.layovers[index];
                     html += `
-                        <div style="padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; margin: 10px 0; border-radius: 10px;">
+                        <div style="padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 10px; width: 90%; display: block; margin: auto; margin-bottom: 15px;">
                             <strong> Layover at ${layover.name} (${layover.id})</strong><br>
                             <span style="color: #666;">Duration: ${formatDuration(layover.duration)}</span>
                         </div>
@@ -272,23 +311,22 @@
                     </div>
                 </div>
 
-                <h2 style="color: white; margin-bottom: 20px;">🛬 Vols Retour Disponibles</h2>
+                <h2 style="color: white; margin-bottom: 20px;">Return flights available</h2>
                 <div class="results">
             `;
             
             returnFlights.forEach(returnFlight => {
-                const totalPrice = outboundFlight.price + returnFlight.price;
+                const totalPrice = returnFlight.price;
                 const returnSegments = returnFlight.flights || [];
                 let returnSegmentsHtml = '';
-                let returnLayoversHtml = '';
                 
                 returnSegments.forEach((segment, index) => {
                     returnSegmentsHtml += formatFlightSegment(segment);
                     
                     if (index < returnSegments.length - 1 && returnFlight.layovers && returnFlight.layovers[index]) {
                         const layover = returnFlight.layovers[index];
-                        returnLayoversHtml += `
-                            <div style="padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; margin: 10px 0; border-radius: 10px;">
+                        returnSegmentsHtml += `
+                            <div style="padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 10px; width: 90%; display: block; margin: auto; margin-bottom: 15px;">
                                 <strong> Layover at ${layover.name} (${layover.id})</strong><br>
                                 <span style="color: #666;">Duration: ${formatDuration(layover.duration)}</span>
                             </div>
@@ -300,23 +338,22 @@
                     <div class="flight-card">
                         <div style="    align-items: center; width: 97%; display: block; margin: auto;">
                             <div>
-                                <div style="font-size: 12px; color: #999; margin-bottom: 5px;">Prix retour</div>
-                                <div class="price-badge">${returnFlight.price} EUR</div>
+                                <div style="font-size: 12px; color: #999; margin-bottom: 5px;">Return price</div>
+                                <div class="price-badge book-btn" data-booking-url="${bookingUrl}" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform = 'scale(1.05)'" onmouseout="this.style.transform = 'scale(1)'">${returnFlight.price} EUR</div>
                             </div>
                             <div style="text-align: center; padding: 25px; background: #e8f0fe; border-radius: 25px;">
-                                <div style="font-size: 12px; color: #667eea;">Prix total A/R</div>
+                                <div style="font-size: 12px; color: #667eea;">Total return price</div>
                                 <div style="font-weight: 600; color: #667eea; font-size: 20px;">${totalPrice} EUR</div>
                             </div>
                             <div style="text-align: right; font-size: 13px;">
-                                <div style="color: #999;">Durée retour</div>
+                                <div style="color: #999;">Return duration</div>
                                 <div style="font-weight: 600; color: #333;">${formatDuration(returnFlight.total_duration)}</div>
                             </div>
                         </div>
                         
                         <div class="flight-section">
-                            <div class="section-title">🛬 Vol Retour</div>
+                            <div class="section-title"> Return Flight</div>
                             ${returnSegmentsHtml}
-                            ${returnLayoversHtml}
                         </div>
                     </div>
                 `;
@@ -324,6 +361,14 @@
 
             html += '</div></div>';
             results.innerHTML = html;
+            
+            // Ajouter les event listeners pour les boutons de réservation
+            document.querySelectorAll('.book-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const url = this.getAttribute('data-booking-url');
+                    openBooking(url);
+                });
+            });
         }
 
         function displayResults(data, departureAirport, arrivalAirport, departureDate, returnDate) {
@@ -345,7 +390,7 @@
                     if (index < outboundFlights.length - 1 && flight.layovers && flight.layovers[index]) {
                         const layover = flight.layovers[index];
                         outboundSegments += `
-                            <div style="padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; margin: 10px 0; border-radius: 10px;">
+                            <div style="padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 10px; width: 90%; display: block; margin: auto; margin-bottom: 15px;">
                                 <strong> Layover at ${layover.name} (${layover.id})</strong><br>
                                 <span style="color: #666;">Duration: ${formatDuration(layover.duration)}</span>
                             </div>

@@ -60,5 +60,31 @@ def search_return():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 400
 
+@app.route('/book', methods=['POST'])
+def book():
+    data = request.json
+    booking_token = data.get('booking_token')
+    
+    if not booking_token:
+        return jsonify({"error": "Booking token manquant"}), 400
+    
+    params = {
+        "engine": "google_flights",
+        "booking_token": booking_token,
+        "api_key": API_KEY,
+    }
+    
+    try:
+        print(f"Paramètres de booking: {params}")  # Debug
+        search = serpapi.search(params)
+        results = search.as_dict()
+        print(f"Résultats de booking: {results}")  # Debug
+        return jsonify(results)
+    except Exception as e:
+        print(f"Erreur de booking: {e}")  # Debug
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 400
+
 if __name__ == '__main__':
     app.run(debug=True)
