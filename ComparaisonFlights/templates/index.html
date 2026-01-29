@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche de Vols</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="search-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="departure_airport">Departure airport</label>
+                    <input type="text" id="departure_airport" placeholder="Ex: CDG" maxlength="3" required>
+                </div>
+                <div class="form-group">
+                    <label for="arrival_airport">Arrival airport</label>
+                    <input type="text" id="arrival_airport" placeholder="Ex: DXB" maxlength="3" required>
+                </div>
+                <div class="form-group">
+                    <label for="departure_date">Departure Date</label>
+                    <input type="text" id="departure_date" placeholder="Select" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="return_date">Return Date</label>
+                    <input type="text" id="return_date" placeholder="Select" readonly>
+                </div>
+                <input type="hidden" id="date_range_picker">
+            </div>
+            <button onclick="searchFlights()" id="searchBtn">Search for Flights</button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+        <div class="separator" style="margin-bottom: 20px; margin-left: 3%; font-size: 20px;"> <strong>Most Popular Flights</strong></div>
+        <div id="results" class="results"></div>
+    </div>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script>
+        // Initialiser Daterangepicker au chargement
+        $(document).ready(function() {
+            let rangeStart = moment();
+            let rangeEnd = moment().add(1, 'day');
+
+            // Initialiser le daterangepicker sur un champ caché
+            $('#date_range_picker').daterangepicker({
+                opens: 'center',
+                parentEl: '.container',
+                locale: {
+                    format: 'YYYY-MM-DD',
+                    applyLabel: 'Confirm',
+                    cancelLabel: 'Cancel',
+                    daysOfWeek: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+                    monthNames: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+                    firstDay: 1
+                },
+                startDate: rangeStart,
+                endDate: rangeEnd
+            }, function(start, end) {
+                rangeStart = start;
+                rangeEnd = end;
+                // Afficher la date de départ dans le premier champ
+                document.getElementById('departure_date').value = start.format('YYYY-MM-DD');
+                // Afficher la date de retour dans le deuxième champ
+                document.getElementById('return_date').value = end.format('YYYY-MM-DD');
+            });
+
+            // Afficher les dates initiales
+            document.getElementById('departure_date').value = rangeStart.format('YYYY-MM-DD');
+            document.getElementById('return_date').value = rangeEnd.format('YYYY-MM-DD');
+
+            // Ouvrir le calendrier quand on clique sur un des deux champs
+            $('#departure_date, #return_date').on('click', function() {
+                $('#date_range_picker').click();
+            });
+        });
+
+        async function searchFlights() {
+            const departure = document.getElementById('departure_airport').value.toUpperCase();
+            const arrival = document.getElementById('arrival_airport').value.toUpperCase();
+            const departureDate = document.getElementById('departure_date').value;
+            const returnDate = document.getElementById('return_date').value;
+
+            if (!departure || !arrival || !departureDate || !returnDate) {
+                alert('Please complete all fields');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const error = document.getElementById('error');
+            const searchBtn = document.getElementById('searchBtn');
+
+            loading.style.display = 'block';
+            results.innerHTML = '';
+            error.style.display = 'none';
+            searchBtn.disabled = true;
+
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        departure_airport: departure,
+                        arrival_airport: arrival,
+                        departure_date: departureDate,
+                        return_date: returnDate
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.best_flights) {
+                    displayResults(data, departure, arrival, departureDate, returnDate);
+                } else {
+                    error.textContent = `Erreur: ${data.error || 'Erreur lors de la recherche'}`;
+                    error.style.display = 'block';
+                }
+            } catch (err) {
+                error.textContent = `Erreur de connexion: ${err.message}`;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                searchBtn.disabled = false;
+            }
+        }
+
+        function formatDuration(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours}h ${mins}m`;
+        }
+
+        function formatFlightSegment(flight) {
+            const depTime = new Date(flight.departure_airport.time);
+            const arrTime = new Date(flight.arrival_airport.time);
+            const depTimeStr = depTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            const arrTimeStr = arrTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            const logoUrl = flight.airline_logo || '';
+            
+            return `
+                <div style="margin-bottom: 15px; padding: 30px; background: #f5f5f5; border-radius: 30px;">
+                    <div class="flight-route-line" style="position: relative;">
+                        <div class="departure-info">
+                            <div class="time" style="font-weight: 600; font-size: 16px;">${depTimeStr}</div>
+                            <div class="airport" style="font-weight: bold; font-size: 14px;">${flight.departure_airport.id}</div>
+                            <div style="font-size: 12px; color: #999;">${flight.departure_airport.name}</div>
+                        </div>
+                        
+                        <div class="route-connector">
+                            <div class="dotted-line"></div>
+                            <div class="plane-icon">
+                               <i class="fa-solid fa-plane"></i>
+                            </div>
+                            <div class="flight-duration">${formatDuration(flight.duration)}</div>
+                        </div>
+                        
+                        <div class="arrival-info">
+                            <div class="time" style="font-weight: 600; font-size: 16px;">${arrTimeStr}</div>
+                            <div class="airport" style="font-weight: bold; font-size: 14px;">${flight.arrival_airport.id}</div>
+                            <div style="font-size: 12px; color: #999;">${flight.arrival_airport.name}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-top: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            ${logoUrl ? `<img src="${logoUrl}" alt="${flight.airline}" style="width: 40px; height: 40px; object-fit: contain; background: #f5f5f5; padding: 2px; border-radius: 4px;">` : ''}
+                            <div>
+                                <strong>${flight.airline}</strong><br>
+                                <span style="color: #000;">Flight ${flight.flight_number}</span>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: #000; font-weight: 600;">${flight.travel_class || 'Economy'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function selectOutboundFlight(flight, departureAirport, arrivalAirport, returnDate, departureDate) {
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const error = document.getElementById('error');
+
+            loading.style.display = 'block';
+            error.style.display = 'none';
+
+            try {
+                const response = await fetch('/search-return', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        departure_airport: departureAirport,
+                        arrival_airport: arrivalAirport,
+                        departure_date: departureDate,
+                        return_date: returnDate,
+                        departure_token: flight.departure_token
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.best_flights || data.other_flights) {
+                    displayReturnFlights(flight, data, departureAirport, arrivalAirport);
+                } else {
+                    error.textContent = `Erreur: ${data.error || 'Erreur lors de la recherche'}`;
+                    error.style.display = 'block';
+                }
+            } catch (err) {
+                error.textContent = `Erreur de connexion: ${err.message}`;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function bookFlight(bookingToken) {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+
+            loading.style.display = 'block';
+            error.style.display = 'none';
+
+            try {
+                const response = await fetch('/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        booking_token: bookingToken
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Booking response:', data);
+                alert('Vol réservé avec succès!');
+            } catch (err) {
+                error.textContent = `Erreur de réservation: ${err.message}`;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Ouvrir la page Google Flights pour réservation
+        function openBooking(url) {
+            if (!url) {
+                alert('Lien de réservation indisponible.');
+                return;
+            }
+            window.open(url, '_blank');
+        }
+
+        function displayReturnFlights(outboundFlight, data, departureAirport, arrivalAirport) {
+            const results = document.getElementById('results');
+            const returnFlights = data.best_flights || data.other_flights || [];
+            const bookingUrl = (data.search_metadata && data.search_metadata.google_flights_url) || '';
+            
+            if (returnFlights.length === 0) {
+                results.innerHTML = '<div class="no-results">Aucun vol retour trouvé</div>';
+                return;
+            }
+
+            let html = `
+                <div style="margin-bottom: 30px;">
+                    <h2 style="color: white; margin-bottom: 20px;">Selected Outbound Flight</h2>
+                    <div class="flight-card">
+                        <div style="    align-items: center; width: 97%; display: block; margin: auto;">
+                            <div class="price-badge">${outboundFlight.price} EUR</div>
+                            <div style="text-align: right; font-size: 13px;">
+                                <div style="color: #999;">Flight Time</div>
+                                <div style="font-weight: 600; color: #333;">${formatDuration(outboundFlight.total_duration)}</div>
+                            </div>
+                        </div>
+                        <div class="flight-section">
+                            <div class="section-title"> Ountbound Flight</div>
+            `;
+            
+            const outboundSegments = outboundFlight.flights || [];
+            outboundSegments.forEach((segment, index) => {
+                html += formatFlightSegment(segment);
+                
+                if (index < outboundSegments.length - 1 && outboundFlight.layovers && outboundFlight.layovers[index]) {
+                    const layover = outboundFlight.layovers[index];
+                    html += `
+                        <div style="padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 10px; width: 90%; display: block; margin: auto; margin-bottom: 15px;">
+                            <strong> Layover at ${layover.name} (${layover.id})</strong><br>
+                            <span style="color: #666;">Duration: ${formatDuration(layover.duration)}</span>
+                        </div>
+                    `;
+                }
+            });
+
+            html += `
+                        </div>
+                    </div>
+                </div>
+
+                <h2 style="color: white; margin-bottom: 20px;">Return flights available</h2>
+                <div class="results">
+            `;
+            
+            returnFlights.forEach(returnFlight => {
+                const totalPrice = returnFlight.price;
+                const returnSegments = returnFlight.flights || [];
+                let returnSegmentsHtml = '';
+                
+                returnSegments.forEach((segment, index) => {
+                    returnSegmentsHtml += formatFlightSegment(segment);
+                    
+                    if (index < returnSegments.length - 1 && returnFlight.layovers && returnFlight.layovers[index]) {
+                        const layover = returnFlight.layovers[index];
+                        returnSegmentsHtml += `
+                            <div style="padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 10px; width: 90%; display: block; margin: auto; margin-bottom: 15px;">
+                                <strong> Layover at ${layover.name} (${layover.id})</strong><br>
+                                <span style="color: #666;">Duration: ${formatDuration(layover.duration)}</span>
+                            </div>
+                        `;
+                    }
+                });
+                
+                html += `
+                    <div class="flight-card">
+                        <div style="    align-items: center; width: 97%; display: block; margin: auto;">
+                            <div>
+                                <div style="font-size: 12px; color: #999; margin-bottom: 5px;">Return price</div>
+                                <div class="price-badge book-btn" data-booking-url="${bookingUrl}" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform = 'scale(1.05)'" onmouseout="this.style.transform = 'scale(1)'">${returnFlight.price} EUR</div>
+                            </div>
+                            <div style="text-align: center; padding: 25px; background: #e8f0fe; border-radius: 25px;">
+                                <div style="font-size: 12px; color: #667eea;">Total return price</div>
+                                <div style="font-weight: 600; color: #667eea; font-size: 20px;">${totalPrice} EUR</div>
+                            </div>
+                            <div style="text-align: right; font-size: 13px;">
+                                <div style="color: #999;">Return duration</div>
+                                <div style="font-weight: 600; color: #333;">${formatDuration(returnFlight.total_duration)}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flight-section">
+                            <div class="section-title"> Return Flight</div>
+                            ${returnSegmentsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div></div>';
+            results.innerHTML = html;
+            
+            // Ajouter les event listeners pour les boutons de réservation
+            document.querySelectorAll('.book-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const url = this.getAttribute('data-booking-url');
+                    openBooking(url);
+                });
+            });
+        }
+
+        function displayResults(data, departureAirport, arrivalAirport, departureDate, returnDate) {
+            const results = document.getElementById('results');
+            const flights = data.best_flights || [];
+            
+            if (flights.length === 0) {
+                results.innerHTML = '<div class="no-results">Aucun vol trouvé pour ces critères</div>';
+                return;
+            }
+
+            results.innerHTML = flights.slice(0, 10).map(flight => {
+                const outboundFlights = flight.flights || [];
+                let outboundSegments = '';
+                
+                outboundFlights.forEach((segment, index) => {
+                    outboundSegments += formatFlightSegment(segment);
+                    
+                    if (index < outboundFlights.length - 1 && flight.layovers && flight.layovers[index]) {
+                        const layover = flight.layovers[index];
+                        outboundSegments += `
+                            <div style="padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 10px; width: 90%; display: block; margin: auto; margin-bottom: 15px;">
+                                <strong> Layover at ${layover.name} (${layover.id})</strong><br>
+                                <span style="color: #666;">Duration: ${formatDuration(layover.duration)}</span>
+                            </div>
+                        `;
+                    }
+                });
+
+                return `
+                    <div class="flight-card">
+                        <div style="    align-items: center; width: 97%; display: block; margin: auto;">
+                            <div 
+                                class="price-badge" 
+                                onclick="selectOutboundFlight(${JSON.stringify(flight).replace(/"/g, '&quot;')}, '${departureAirport}', '${arrivalAirport}', '${returnDate}', '${departureDate}')"
+                                style="cursor: pointer; transition: transform 0.2s;"
+                                onmouseover="this.style.transform = 'scale(1.05)'"
+                                onmouseout="this.style.transform = 'scale(1)'"
+                            >
+                                ${flight.price} EUR
+                            </div>
+                            <div style="text-align: right; font-size: 13px;">
+                                <div style="color: #999;">Durée totale</div>
+                                <div style="font-weight: 600; color: #333;">${formatDuration(flight.total_duration)}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flight-section">
+                            <div class="section-title">Outbound Flight</div>
+                            ${outboundSegments}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
