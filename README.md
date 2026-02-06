@@ -1,6 +1,6 @@
 # Jeu d'échecs 3D
 
-![Plateau 3D — capture d'écran](static\label.png)
+![Plateau 3D — capture d'écran](statique/étiquette.png)
 
 
 ## Description
