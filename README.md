@@ -1,8 +1,7 @@
 # Jeu d'échecs 3D
 
-```markdown
 ![Plateau 3D — capture d'écran](static\label.png)
-```
+
 
 ## Description
 Jeu d'échecs en 3D permettant de jouer contre le moteur Stockfish (MinMax). Le projet combine la logique stratégique du jeu et une expérience visuelle fluide : rotation/zoom de la caméra, animations des pièces et rendu 3D en temps réel.
