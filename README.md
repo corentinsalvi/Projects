@@ -1,7 +1,7 @@
 # Jeu d'échecs 3D
 
 ```markdown
-![Plateau 3D — capture d'écran]("static/label.png" "Jeu d'échecs 3D")
+![Plateau 3D — capture d'écran]("static\label.png" "Jeu d'échecs 3D")
 ```
 
 ## Description
