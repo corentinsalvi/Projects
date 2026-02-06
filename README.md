@@ -1,31 +1,61 @@
-3D Chess Game
+# Jeu d'échecs 3D
 
-General description:
-The project involves developing a 3D chess game.
-It allows a person to play against a well-known chess robot based on the MinMax algorithm: Stockfish.
-The aim is to combine the strategic logic of traditional chess with a modern, fluid visual experience.
+```markdown
+![Plateau 3D — capture d'écran]("C:\Users\coren\OneDrive\Images\CheckMate\label.png" "Jeu d'échecs 3D")
+```
 
-Main features:
-- 3D display of the board and pieces, with the ability to rotate, zoom and move the camera.
-- Detection and validation of legal moves according to the official rules of chess.
-- Complete game management: moves, captures, check, checkmate and pawn promotion.
-- Animation of piece movements and real-time 3D rendering.
+## Description
+Jeu d'échecs en 3D permettant de jouer contre le moteur Stockfish (MinMax). Le projet combine la logique stratégique du jeu et une expérience visuelle fluide : rotation/zoom de la caméra, animations des pièces et rendu 3D en temps réel.
 
-Languages used:
-Python for game logic.
-JavaScript for 3D modelling and rendering.
-HTML/CSS for interface and layout.
+## Fonctionnalités principales
+- Affichage 3D du plateau et des pièces avec contrôle caméra (rotation, zoom, déplacement).
+- Détection et validation des coups selon les règles officielles.
+- Gestion complète de la partie : coups, prises, échec, échec et mat, promotion.
+- Intégration de Stockfish pour l'IA.
+- Animations pour les déplacements et rendu 3D temps réel.
 
-Prerequisites:
-Python
-Stockfish executable
+## Technologies
+- Python : logique du jeu et intégration de Stockfish.
+- JavaScript : modélisation et rendu 3D.
+- HTML / CSS : interface utilisateur.
 
-Setup:
-Download the folder
-Recreate a virtual environment 
-Activate the virtual environment
-Install the necessary libraries (e.g. pip install -r bibliotheques-necessaires.txt)
-Run python main.py
-Click on the local URL provided
-Play ;) 
+## Prérequis
+- Python 3.8+ installé
+- Exécutable Stockfish (mettez le chemin dans la config ou dans le dossier du projet)
+- Navigateur moderne pour la partie front-end
 
+## Installation et exécution
+1. Cloner le dépôt :
+    ```bash
+    git clone <url-du-repo>
+    cd <nom-du-repo>
+    ```
+2. Créer et activer un environnement virtuel :
+    - Windows :
+      ```powershell
+      python -m venv EnvVirtuel
+      .\EnvVirtuel\Scripts\Activate.ps1
+      ```
+3. Installer les dépendances :
+    ```bash
+    pip install -r bibliotheques-necessaires.txt
+    ```
+4. Lancer l'application :
+    ```bash
+    python main.py
+    ```
+6. Ouvrir l'URL locale fournie dans le terminal (ex. http://localhost:5000) et jouer.
+
+## Utilisation
+- Utiliser la souris / les contrôles affichés pour tourner, zoomer et déplacer la caméra.
+- Cliquer une pièce puis sa destination pour jouer un coup.
+- L'IA répond automatiquement via Stockfish.
+
+## Contribuer
+- Ouvrir une issue pour signaler bugs ou proposer améliorations.
+- Faire une branche par fonctionnalité puis un pull request clair et documenté.
+
+## Licence
+Voir le fichier LICENSE du projet.
+
+Bon développement et bon jeu !
