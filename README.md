@@ -19,9 +19,9 @@ Jeu d'échecs en 3D permettant de jouer contre le moteur Stockfish (MinMax). Le 
 - HTML / CSS : interface utilisateur.
 
 ## Prérequis
-- Python 3.8+ installé
-- Exécutable Stockfish (mettez le chemin dans la config ou dans le dossier du projet)
-- Navigateur moderne pour la partie front-end
+- Python 3.13
+- Exécutable Stockfish
+- Navigateur pour la partie front-end
 
 ## Installation et exécution
 1. Cloner le dépôt :
@@ -45,16 +45,3 @@ Jeu d'échecs en 3D permettant de jouer contre le moteur Stockfish (MinMax). Le 
     ```
 6. Ouvrir l'URL locale fournie dans le terminal (ex. http://localhost:5000) et jouer.
 
-## Utilisation
-- Utiliser la souris / les contrôles affichés pour tourner, zoomer et déplacer la caméra.
-- Cliquer une pièce puis sa destination pour jouer un coup.
-- L'IA répond automatiquement via Stockfish.
-
-## Contribuer
-- Ouvrir une issue pour signaler bugs ou proposer améliorations.
-- Faire une branche par fonctionnalité puis un pull request clair et documenté.
-
-## Licence
-Voir le fichier LICENSE du projet.
-
-Bon développement et bon jeu !
