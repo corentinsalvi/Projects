@@ -1,17 +1,32 @@
-NQueens Problem Project
+## Problème des NReines
+![Solution NQueens Problem](./image.png)
 
-General Description
-This project implements a solution to the N-Queens (default is 10 ) problem using OCaml.
-The goal is to place n queens on a nxn chessboard so that no two queens threaten each other — meaning no two queens share the same row, column, or diagonal.
-The algorithm uses recursion and backtracking to explore possible configurations until a valid solution is found.
+## Description:
+Ce projet met en œuvre une solution au problème des N reines (la valeur par défaut est 10) à l'aide d'OCaml.
 
-Features
+L'objectif est de placer N reines sur un échiquier NxN de manière à ce qu'aucune reine ne menace une autre reine, c'est-à-dire qu'aucune reine ne partage la même ligne, colonne ou diagonale qu'une autre reine.
 
-Representation of positions on the board as coordinate pairs (x, y)
-Detection of conflicts between queens (same row, column, or diagonal)
-Recursive placement of queens using a backtracking approach
-Display of the final chessboard solution in the terminal
+L'algorithme utilise la récursivité et le backtracking pour explorer les configurations possibles jusqu'à ce qu'une solution valide soit trouvée.
 
-Prerequisites
+## Fonctionnement 
+- Représentation des positions sur l'échiquier sous forme de paires de coordonnées (x, y)
+- Détection des conflits entre les reines (même ligne, colonne ou diagonale)
+- Placement récursif des reines avec une approche backtracking
+- Affichage de la solution finale sur l'échiquier dans le terminal
+
+## Prérequis
 OCaml 
+
+## Installation et exécution 
+1. Cloner le dépôt:
+``` powershell
+git clone <url-du-repo>
+cd <nom-du-repo>
+```
+
+2. Compiler et exécuter le fichier
+```powershell 
+ocamlc -o nreines Nreines.ml 
+.\nreines
+```
 
