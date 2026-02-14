@@ -1,18 +1,27 @@
-Wordle Game 
+## Wordle Game 
+![Interface WEB - Vols](./image.png)
 
-General description:
-The project involves developing an interactive Wordle game where the player must guess a  word in a maximum of six attempts.
-Each attempt reveals coloured clues indicating which letters are correctly placed and which are incorrectly placed.
+## Description:
+Le projet consiste à développer un jeu Wordle interactif dans lequel le joueur doit deviner un mot en six essais maximum.
 
-Languages used:
-Python for game logic
-Tkinter is used to make the interface
+Chaque essai révèle des indices colorés indiquant quelles lettres sont correctement placées et lesquelles sont mal placées.
 
-Prerequisites:
-Python
+## Technologies
+- Python: Logique du jeu 
+- Tkinter: Interface du jeu
 
-Setup:
-Run python wordle.py
-Enter the length of the world you want to guess
-Tkinter window will pop
-Play ;) 
+## Prérequis 
+- Python: 3.13
+
+## Installation et exécution
+1. Cloner le dépôt:
+``` powershell
+git clone <url-du-repo>
+cd <nom-du-repo>
+```
+
+2. Lancer  le script:
+```powershell
+python app.py
+```
+Une fenêtre Tkinter va s'ouvrir et il vous suffit de jouer ;)
