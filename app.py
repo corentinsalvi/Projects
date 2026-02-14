@@ -3,7 +3,7 @@ import serpapi
 
 app = Flask(__name__, template_folder='templates',static_folder='templates')
 
-API_KEY = "fd4a66c6dce02ccaf5a0d8b8d65d48d89f21883f50826fb2d18369f910213b75"
+API_KEY = "your-api-key-here"  # Remplacez par votre clé API SerpApi
 
 @app.route('/')
 def index():
